@@ -7,7 +7,13 @@ namespace Quantum.Grovers
     {
         static void Main(string[] args)
         {
-
+            using (var sim = new QuantumSimulator())
+            {
+                var res = GroverSearch.Run(sim).Result;
+                System.Console.WriteLine($"Result of measurement: {res}");
+            }
+            System.Console.WriteLine("Press any key to continue...");
+            System.Console.ReadKey();
         }
     }
 }
