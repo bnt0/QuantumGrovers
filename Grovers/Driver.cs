@@ -3,9 +3,9 @@ using Microsoft.Quantum.Simulation.Simulators;
 
 namespace Quantum.Grovers
 {
-    class Driver
+    public class Driver
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             using (var sim = new QuantumSimulator())
             {
