@@ -7,33 +7,57 @@
 	{
 		body
 		{
-			let NUM_QUBITS = 4;
-			mutable res = Zero;
-			using (funcInputQubits = Qubit[NUM_QUBITS])
+			let NUM_INPUT_QUBITS = 4;
+			let NUM_ITERATIONS = 2;
+			mutable res = [Zero];
+
+			using (register = Qubit[NUM_INPUT_QUBITS + NUM_ITERATIONS])
 			{
-				ResetAll(funcInputQubits); // Initialize all qubits to |0> (TODO not sure if needed)
-				ApplyToEach(H, funcInputQubits);
+				let inputQubits = register[0..NUM_INPUT_QUBITS - 1];
+				let ancillas    = register[NUM_INPUT_QUBITS..Length(register) - 1];
 
-				using (ancilla = Qubit[1])
-				{
-					X(ancilla[0]); // Set ancilla to |1>
-					H(ancilla[0]); // Apply Hadamard to ancilla
+				ApplyToEach(H, inputQubits);
 
-					set res = M(ancilla[0]);
-					ResetAll(ancilla);
+				for (i in 0 .. NUM_ITERATIONS - 1) {
+					let ancilla = ancillas[i];
+					X(ancilla); // Set ancilla to |1>
+					H(ancilla); // Apply Hadamard to ancilla
+					// Run oracle gate with inputQubits and ancilla
+					Oracle(inputQubits + [ancilla]);
+					InversionAboutMean(inputQubits);
+					Message($"{i}");
 				}
-				ResetAll(funcInputQubits);
+
+				set res = MultiM(inputQubits);
+
+				ResetAll(register);
 			}
 
-			return ResultAsInt([res]);
+			return ResultAsInt(res);
 		}
 	}
 
-    operation GroverDiffusionOperator () : ()
+    operation Oracle (inputQubits : Qubit[]) : ()
     {
         body
         {
-            
+			// TODO implement
+			let nq = Length(inputQubits);
+			Message($"Num input qubits: {nq}");
         }
+		adjoint auto	
+		controlled auto
+		controlled adjoint auto
     }
+
+	operation InversionAboutMean (qs : Qubit[]) : ()
+	{
+		body
+		{
+			// TODO implement
+		}
+		adjoint auto
+		controlled auto
+		controlled adjoint auto
+	}
 }
