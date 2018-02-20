@@ -37,6 +37,8 @@
 		}
 	}
 
+	// Oracle to carry out phase inversion on qubits based on some indicator function
+	// In this example, the only marked state will be the |00..0> state
     operation Oracle (inputQubits : Qubit[]) : ()
     {
         body
@@ -54,10 +56,15 @@
 	{
 		body
 		{
-			// TODO implement
+			ApplyToEach(H, qs);
+			ApplyToEach(X, qs);
+			RAll1(-1.0, qs);		// Phase shift on the |11..1> state
+			ApplyToEach(X, qs);
+			ApplyToEach(H, qs);
 		}
-		adjoint auto
-		controlled auto
-		controlled adjoint auto
+		//TODO look into why these can't be generated automatically
+		//adjoint auto
+		//controlled auto
+		//controlled adjoint auto
 	}
 }
