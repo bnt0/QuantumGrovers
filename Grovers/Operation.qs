@@ -2,6 +2,7 @@
 {
     open Microsoft.Quantum.Primitive;
     open Microsoft.Quantum.Canon;
+	open Microsoft.Quantum.Extensions.Math;
 
 	operation GroverSearch () : (Int)
 	{
@@ -39,17 +40,14 @@
 
 	// Oracle to carry out phase inversion on qubits based on some indicator function
 	// In this example, the only marked state will be the |00..0> state
-    operation Oracle (inputQubits : Qubit[]) : ()
+    operation Oracle (qs : Qubit[]) : ()
     {
         body
         {
-			// TODO implement
-			let nq = Length(inputQubits);
-			Message($"Num input qubits: {nq}");
+			ApplyToEach(X, qs);
+			RAll1(PI(), qs);		// Phase shift on the |11..1> state
+			ApplyToEach(X, qs);
         }
-		adjoint auto	
-		controlled auto
-		controlled adjoint auto
     }
 
 	operation InversionAboutMean (qs : Qubit[]) : ()
@@ -58,13 +56,9 @@
 		{
 			ApplyToEach(H, qs);
 			ApplyToEach(X, qs);
-			RAll1(-1.0, qs);		// Phase shift on the |11..1> state
+			RAll1(PI(), qs);		// Phase shift on the |11..1> state
 			ApplyToEach(X, qs);
 			ApplyToEach(H, qs);
 		}
-		//TODO look into why these can't be generated automatically
-		//adjoint auto
-		//controlled auto
-		//controlled adjoint auto
 	}
 }

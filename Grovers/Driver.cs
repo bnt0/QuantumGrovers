@@ -9,8 +9,19 @@ namespace Quantum.Grovers
         {
             using (var sim = new QuantumSimulator())
             {
-                var res = GroverSearch.Run(sim).Result;
-                System.Console.WriteLine($"Result of measurement: {res}");
+                int numZeros = 0;
+                int numTotal = 512;
+                for (int i = 0; i < numTotal; i++)
+                {
+                    var res = GroverSearch.Run(sim).Result;
+                    if (res == 0)
+                    {
+                        numZeros++;
+                    }
+                    //System.Console.WriteLine($"{res} ");
+                }
+                System.Console.WriteLine();
+                System.Console.WriteLine($"Result of measurements: {numZeros} / {numTotal}");
             }
             System.Console.WriteLine("Press any key to continue...");
             System.Console.ReadKey();
