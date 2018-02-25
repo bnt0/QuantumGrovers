@@ -8,9 +8,9 @@
 	{
 		body
 		{
-			let NUM_INPUT_QUBITS = 4;
-			let NUM_ITERATIONS = 2;
-			mutable res = [Zero];
+			let NUM_INPUT_QUBITS = 3;
+			let NUM_ITERATIONS = 1;
+			mutable res = new Result[NUM_INPUT_QUBITS];
 
 			using (register = Qubit[NUM_INPUT_QUBITS + NUM_ITERATIONS])
 			{
@@ -26,7 +26,6 @@
 					// Run oracle gate with inputQubits and ancilla
 					Oracle(inputQubits + [ancilla]);
 					InversionAboutMean(inputQubits);
-					Message($"{i}");
 				}
 
 				set res = MultiM(inputQubits);
@@ -45,20 +44,81 @@
         body
         {
 			ApplyToEach(X, qs);
-			RAll1(PI(), qs);		// Phase shift on the |11..1> state
+			(Controlled X)(qs[0..Length(qs)-2], qs[Length(qs)-1]);
 			ApplyToEach(X, qs);
         }
     }
+
+	operation TestOracle () : (Bool)
+	{
+		body
+		{
+			using (qs = Qubit[4])
+			{
+				Message("Test started");
+				// |0000> --> |0001>
+				AssertQubit(Zero, qs[3]);
+				Oracle (qs);
+				AssertQubit(One, qs[3]);
+				ResetAll(qs);
+
+				// |0001> --> |0000>
+				X(qs[3]);
+				AssertQubit(One, qs[3]);
+				Oracle(qs);
+				AssertQubit(Zero, qs[3]);
+				ResetAll(qs);
+
+				// |1110> --> |1110>
+				X(qs[0]);
+				X(qs[1]);
+				X(qs[2]);
+				AssertQubit(Zero, qs[3]);
+				Oracle (qs);
+				AssertQubit(Zero, qs[3]);
+				ResetAll(qs);
+			}
+			
+			return true;
+		}
+	}
 
 	operation InversionAboutMean (qs : Qubit[]) : ()
 	{
 		body
 		{
 			ApplyToEach(H, qs);
-			ApplyToEach(X, qs);
+			//ApplyToEach(X, qs);
 			RAll1(PI(), qs);		// Phase shift on the |11..1> state
-			ApplyToEach(X, qs);
+			//ApplyToEach(X, qs);
 			ApplyToEach(H, qs);
+		}
+	}
+
+	operation TestInversionAboutMean () : (Bool)
+	{
+		body
+		{
+			let TOLERANCE = 1e-5;
+
+			using (qs = Qubit[1])
+			{
+				// |0> ---> |1>
+				AssertQubit(Zero, qs[0]);
+				InversionAboutMean(qs);
+				AssertQubit(One, qs[0]);
+				ResetAll(qs);
+
+				// 1/sqrt(2)*(|0> + |1>) ---> 1/sqrt(2)*(|0> + |1>)
+				H(qs[0]);
+				let prob = Complex(1.0/Sqrt(2.0), 0.0);
+				AssertQubitState((prob, prob), qs[0], TOLERANCE);
+				InversionAboutMean(qs);
+				AssertQubitState((prob, prob), qs[0], TOLERANCE);
+				ResetAll(qs);
+			}
+
+			return true;
 		}
 	}
 }

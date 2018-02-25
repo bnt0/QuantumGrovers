@@ -7,10 +7,17 @@ namespace Quantum.Grovers
     {
         public static void Main(string[] args)
         {
+            // TODO move these to GroversTests
+            var sim = new QuantumSimulator();
+            //var res = TestOracle.Run(sim).Result;
+            var res = TestInversionAboutMean.Run(sim).Result;
+            return;
+            
+            /*
             using (var sim = new QuantumSimulator())
             {
                 int numZeros = 0;
-                int numTotal = 512;
+                int numTotal = 100;
                 for (int i = 0; i < numTotal; i++)
                 {
                     var res = GroverSearch.Run(sim).Result;
@@ -18,13 +25,14 @@ namespace Quantum.Grovers
                     {
                         numZeros++;
                     }
-                    //System.Console.WriteLine($"{res} ");
+                    System.Console.WriteLine($"{res} ");
                 }
                 System.Console.WriteLine();
                 System.Console.WriteLine($"Result of measurements: {numZeros} / {numTotal}");
             }
             System.Console.WriteLine("Press any key to continue...");
             System.Console.ReadKey();
+            */
         }
     }
 }
