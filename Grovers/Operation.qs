@@ -4,13 +4,14 @@
     open Microsoft.Quantum.Canon;
 	open Microsoft.Quantum.Extensions.Math;
 
-	operation GroverSearch () : (Int)
+	operation GroverSearch () : (Int, Int)
 	{
 		body
 		{
 			let NUM_INPUT_QUBITS = 3;
 			let NUM_ITERATIONS = 1;
-			mutable res = new Result[NUM_INPUT_QUBITS];
+			mutable foundInput = new Result[NUM_INPUT_QUBITS];
+			mutable res = Zero;
 
 			using (register = Qubit[NUM_INPUT_QUBITS + NUM_ITERATIONS])
 			{
@@ -28,12 +29,16 @@
 					InversionAboutMean(inputQubits);
 				}
 
-				set res = MultiM(inputQubits);
+				// State of last ancilla tells us whether we found the satisfying input
+				set res = M(ancillas[NUM_ITERATIONS - 1]);
+
+				// The state of the input qubits will then be the satisfying solution
+				set foundInput = MultiM(inputQubits);
 
 				ResetAll(register);
 			}
 
-			return ResultAsInt(res);
+			return (ResultAsInt([res]), ResultAsInt(foundInput));
 		}
 	}
 
@@ -117,6 +122,16 @@
 				AssertQubitState((prob, prob), qs[0], TOLERANCE);
 				ResetAll(qs);
 			}
+
+			//using (qs = Qubit[3])
+			//{
+				// |000> ---> (-0.75 * |000>) + sum_{x=|001>}^{|111>} (0.25 * |x>)
+			//	AssertAllZero(qs[0..2]);
+			//	InversionAboutMean(qs);
+			//	let probAllZero = Complex(-0.75, 0);
+			//	let probElse    = Complex(0.25,  0);
+			//	AssertQubitState((probAllZero, 1 - probAllZero) )
+			//}
 
 			return true;
 		}
