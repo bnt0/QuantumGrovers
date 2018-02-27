@@ -123,17 +123,42 @@
 				ResetAll(qs);
 			}
 
-			//using (qs = Qubit[3])
-			//{
+			// TODO figure out why compilation fails, if this is called qs
+			// This should not be the same scope as the using block above
+			using (qs2 = Qubit[3])
+			{
 				// |000> ---> (-0.75 * |000>) + sum_{x=|001>}^{|111>} (0.25 * |x>)
-			//	AssertAllZero(qs[0..2]);
-			//	InversionAboutMean(qs);
-			//	let probAllZero = Complex(-0.75, 0);
-			//	let probElse    = Complex(0.25,  0);
-			//	AssertQubitState((probAllZero, 1 - probAllZero) )
-			//}
+
+				// TODO: change this to use AssertAllZero(qs2).
+				// For some reason according to the docs, the type of this function is (Qubit[]) : ()
+				// But the compiler fails with an error, claiming it's actually (String, Qubit[], Double) : ()
+				AssertQubit(Zero, qs2[0]);
+				AssertQubit(Zero, qs2[1]);
+				AssertQubit(Zero, qs2[2]);
+
+				// This does the same as above, it's here only to test if AsserProb works as I expect it to
+				// It can be removed, if AssertAllZero is working above.
+				AssertProb([PauliZ; PauliZ; PauliZ], qs2, Zero, 1.0, "Prob of |000> is not as expected", TOLERANCE);
+
+				InversionAboutMean(qs2);
+
+				let probAllZero = Complex(-0.75, 0.0);
+				let probElse    = Complex(0.25,  0.0);
+
+				AssertProb([PauliZ; PauliZ; PauliZ], qs2, Zero, AbsoluteSquare(probAllZero), "Prob of |000> is not as expected", TOLERANCE);
+				AssertProb([PauliZ; PauliZ; PauliZ], qs2, One, AbsoluteSquare(probElse), "Prob of |000> is not as expected", TOLERANCE);
+
+				ResetAll(qs2);
+			}
 
 			return true;
 		}
+
+	}
+	
+	function AbsoluteSquare (c : Complex) : (Double)
+	{
+		let (real, imag) = c;
+		return (real*real + imag*imag);
 	}
 }
