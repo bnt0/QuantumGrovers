@@ -8,8 +8,9 @@ namespace Quantum.Grovers
         public static void Main(string[] args)
         {
             //RunTests();
-            RunGrovers();
-            //RunThreeQubitSingleIterGrovers();
+            //RunGrovers();
+            RunThreeQubitSingleIterGrovers();
+
             System.Console.WriteLine("Press any key to continue...");
             System.Console.ReadKey();
             
@@ -32,7 +33,7 @@ namespace Quantum.Grovers
             int numTotal = 100;
             for (int i = 0; i < numTotal; i++)
             {
-                var (res, found) = ThreeQubitGrover.Run(sim).Result;
+                var found = ThreeQubitGrover.Run(sim).Result;
                 if (found[0] == Result.Zero && found[1] == Result.Zero && found[2] == Result.Zero)
                 {
                     numSuccesses++;

@@ -5,11 +5,10 @@
 	open Microsoft.Quantum.Extensions.Math;
 
 	// A single iteration of a 3 qubit Grover search looking for |000>
-	operation ThreeQubitGrover () : (Result, Result[])
+	operation ThreeQubitGrover () : (Result[])
 	{
 		body
 		{
-			mutable res = Zero;
 			mutable found = new Result[3];
 
 			using (qs = Qubit[4])
@@ -19,19 +18,18 @@
 
 				ApplyToEach(H, inp);
 				X(anc);
+				H(anc);
 				Oracle(qs);
 				InversionAboutMean(inp);
 
-				// AssertProb([PauliZ], [anc], Zero, 0.5, "Prob of success is not as expected", 1e-5);
-				// Actual probability according to simulator: 0.875000000000001
-				set res = M(anc);
-
+				// What is the Prob in AssertProb ???
+				AssertProb([PauliZ; PauliZ; PauliZ], inp, Zero, 0.875, "Prob of |000> is not as expected", 1e-5);
 				set found = MultiM(inp);
 
 				ResetAll(qs);
 			}
 
-			return (res, found);
+			return (found);
 		}
 	}
 
