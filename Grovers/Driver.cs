@@ -7,7 +7,9 @@ namespace Quantum.Grovers
     {
         public static void Main(string[] args)
         {
-            RunTests();
+            //RunTests();
+            RunGrovers();
+            //RunThreeQubitSingleIterGrovers();
             System.Console.WriteLine("Press any key to continue...");
             System.Console.ReadKey();
             
@@ -21,6 +23,23 @@ namespace Quantum.Grovers
             var res2 = TestInversionAboutMean.Run(sim).Result;
             System.Console.WriteLine("Running tests finished!");
             return;
+        }
+
+        public static void RunThreeQubitSingleIterGrovers()
+        {
+            var sim = new QuantumSimulator();
+            int numSuccesses = 0;
+            int numTotal = 100;
+            for (int i = 0; i < numTotal; i++)
+            {
+                var (res, found) = ThreeQubitGrover.Run(sim).Result;
+                if (found[0] == Result.Zero && found[1] == Result.Zero && found[2] == Result.Zero)
+                {
+                    numSuccesses++;
+                    System.Console.WriteLine(found);
+                }
+            }
+            System.Console.WriteLine($"Result of measurements: {numSuccesses} / {numTotal}");
         }
 
         public static void RunGrovers()
