@@ -38,7 +38,7 @@ namespace Quantum.Grovers
             int numTotal = 1000;
             for (int i = 0; i < numTotal; i++)
             {
-                var found = SingleIterGrover.Run(sim, 3).Result;
+                var found = RunSingleIterGrovers.Run(sim, 3).Result;
                 if (found.TrueForAll(r => r == Result.Zero))
                 {
                     numSuccesses++;
@@ -56,7 +56,7 @@ namespace Quantum.Grovers
             int numTotal = 1000;
             for (int i = 0; i < numTotal; i++)
             {
-                var found = SingleIterGrover.Run(sim, 4).Result; // Number of total qubits is 4 because of ancilla qubit
+                var found = RunSingleIterGrovers.Run(sim, 3).Result; // Number of total qubits is 4 because of ancilla qubit
                 if (found.TrueForAll(r => r == Result.Zero))
                 {
                     numSuccesses++;
@@ -70,19 +70,19 @@ namespace Quantum.Grovers
         {
             System.Console.WriteLine($"Running single iterations of Grover's, with #1 number of qubits used for input (i.e. excluding ancilla); and #2 successful measurements out of 1000...");
             var sim = new QuantumSimulator();
-            for (int numTotalQubits = 3; numTotalQubits <= 14; numTotalQubits++)
+            for (int numInpQubits = 3; numInpQubits <= 14; numInpQubits++)
             {
                 int numSuccesses = 0;
                 for (int i = 0; i < 1000; i++)
                 {
-                    var found = SingleIterGrover.Run(sim, numTotalQubits - 1).Result;
+                    var found = RunSingleIterGrovers.Run(sim, numInpQubits).Result;
                     if (found.TrueForAll(r => r == Result.Zero))
                     {
                         numSuccesses++;
                     }
                 }
                 // print number of qubits without ancilla, and number of sucessess out of 1000 runs
-                System.Console.WriteLine($"{numTotalQubits - 1}; {numSuccesses}");
+                System.Console.WriteLine($"{numInpQubits - 1}; {numSuccesses}");
             }
         }
 
@@ -92,14 +92,14 @@ namespace Quantum.Grovers
             int numRuns = 100;
             System.Console.WriteLine($"Running single iterations of Grover's, with #1 number of total qubits, and #2 average number of miliseconds in one run over {numRuns}, standard deviation of times...");
 
-            for (int numTotalQubits = 3; numTotalQubits <= 3; numTotalQubits++)
+            for (int numInpQubits = 3; numInpQubits <= 13; numInpQubits++)
             {
                 int numSuccesses = 0;
                 var execTimes = new List<double>(numRuns);
                 for (int i = 0; i < numRuns; i++)
                 {
                     var watch = System.Diagnostics.Stopwatch.StartNew();
-                    var found = SingleIterGrover.Run(sim, numTotalQubits - 1).Result;
+                    var found = RunSingleIterGrovers.Run(sim, numInpQubits).Result;
                     if (found.TrueForAll(r => r == Result.Zero))
                     {
                         numSuccesses++;
@@ -114,7 +114,7 @@ namespace Quantum.Grovers
                 }
                 var avg = execTimes.Average();
                 var stdev = System.Math.Sqrt(execTimes.Average(v => System.Math.Pow(v - avg, 2)));
-                System.Console.WriteLine($"{numTotalQubits}, {avg}, {stdev}");
+                System.Console.WriteLine($"{numInpQubits}, {avg}, {stdev}");
             }
         }
     }

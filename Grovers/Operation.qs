@@ -5,15 +5,15 @@
 	open Microsoft.Quantum.Extensions.Math;
 
 	// A single iteration of a numInputQubits qubit Grover search looking for the |00..0> state
-	operation SingleIterGrover (numInputQubits : Int) : (Result[])
+	operation RunSingleIterGrovers (numInputQubits : Int) : (Result[])
 	{
 		body
 		{		
-			return Grover(numInputQubits, 1);
+			return RunGrovers(numInputQubits, 1);
 		}
 	}
 
-	operation Grover (numInputQubits : Int, numIters : Int) : (Result[])
+	operation RunGrovers (numInputQubits : Int, numIters : Int) : (Result[])
 	{
 		body
 		{
@@ -26,12 +26,9 @@
 				let anc = qs[numTotalQubits - 1];
 
 				ApplyToEach(H, inp);
-				X(anc);
-				H(anc);
-				Oracle(qs);
-				InversionAboutMean(inp);
 
-				// What is the Prob in AssertProb ???
+				GroverOperator(inp, anc);
+
 				set found = MultiM(inp);
 
 				ResetAll(qs);
@@ -41,14 +38,26 @@
 		}
 	}
 
+	operation GroverOperator (inp : Qubit[], anc : Qubit) : ()
+	{
+		body
+		{
+			X(anc);
+			H(anc);
+			Oracle(inp, anc);
+			InversionAboutMean(inp);
+		}
+	}
+
 	// Oracle to carry out phase inversion on qubits based on some indicator function
 	// In this example, the only marked state will be the |00..0> state
-    operation Oracle (qs : Qubit[]) : ()
+    operation Oracle (inp : Qubit[], anc : Qubit) : ()
     {
         body
         {
+			let qs = inp + [anc];
 			ApplyToEach(X, qs);
-			(Controlled X)(qs[0..Length(qs)-2], qs[Length(qs)-1]);
+			(Controlled X)(inp, anc);
 			ApplyToEach(X, qs);
         }
     }
@@ -59,17 +68,19 @@
 		{
 			using (qs = Qubit[4])
 			{
+				let inp = qs[0..2];
+				let anc = qs[3];
 				Message("Test started");
 				// |0000> --> |0001>
 				AssertQubit(Zero, qs[3]);
-				Oracle (qs);
+				Oracle (inp, anc);
 				AssertQubit(One, qs[3]);
 				ResetAll(qs);
 
 				// |0001> --> |0000>
 				X(qs[3]);
 				AssertQubit(One, qs[3]);
-				Oracle(qs);
+				Oracle(inp, anc);
 				AssertQubit(Zero, qs[3]);
 				ResetAll(qs);
 
@@ -78,7 +89,7 @@
 				X(qs[1]);
 				X(qs[2]);
 				AssertQubit(Zero, qs[3]);
-				Oracle (qs);
+				Oracle (inp, anc);
 				AssertQubit(Zero, qs[3]);
 				ResetAll(qs);
 			}
