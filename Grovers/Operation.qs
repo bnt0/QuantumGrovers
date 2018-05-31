@@ -4,17 +4,26 @@
     open Microsoft.Quantum.Canon;
 	open Microsoft.Quantum.Extensions.Math;
 
-	// A single iteration of a 3 qubit Grover search looking for |000>
-	operation ThreeQubitGrover () : (Result[])
+	// A single iteration of a numInputQubits qubit Grover search looking for the |00..0> state
+	operation SingleIterGrover (numInputQubits : Int) : (Result[])
+	{
+		body
+		{		
+			return Grover(numInputQubits, 1);
+		}
+	}
+
+	operation Grover (numInputQubits : Int, numIters : Int) : (Result[])
 	{
 		body
 		{
-			mutable found = new Result[3];
+			let numTotalQubits = numInputQubits + 1;
+			mutable found = new Result[numInputQubits];
 
-			using (qs = Qubit[4])
+			using (qs = Qubit[numTotalQubits])
 			{
-				let inp = qs[0..2];
-				let anc = qs[3];
+				let inp = qs[0..numInputQubits - 1];
+				let anc = qs[numTotalQubits - 1];
 
 				ApplyToEach(H, inp);
 				X(anc);
@@ -23,51 +32,12 @@
 				InversionAboutMean(inp);
 
 				// What is the Prob in AssertProb ???
-				AssertProb([PauliZ; PauliZ; PauliZ], inp, Zero, 0.875, "Prob of |000> is not as expected", 1e-5);
 				set found = MultiM(inp);
 
 				ResetAll(qs);
 			}
 
 			return (found);
-		}
-	}
-
-	operation GroverSearch () : (Int, Int)
-	{
-		body
-		{
-			let NUM_INPUT_QUBITS = 3;
-			let NUM_ITERATIONS = 1;
-			mutable foundInput = new Result[NUM_INPUT_QUBITS];
-			mutable res = Zero;
-
-			using (register = Qubit[NUM_INPUT_QUBITS + NUM_ITERATIONS])
-			{
-				let inputQubits = register[0..NUM_INPUT_QUBITS - 1];
-				let ancillas    = register[NUM_INPUT_QUBITS..Length(register) - 1];
-
-				ApplyToEach(H, inputQubits);
-
-				for (i in 0 .. NUM_ITERATIONS - 1) {
-					let ancilla = ancillas[i];
-					X(ancilla); // Set ancilla to |1>
-					H(ancilla); // Apply Hadamard to ancilla
-					// Run oracle gate with inputQubits and ancilla
-					Oracle(inputQubits + [ancilla]);
-					InversionAboutMean(inputQubits);
-				}
-
-				// State of last ancilla tells us whether we found the satisfying input
-				set res = M(ancillas[NUM_ITERATIONS - 1]);
-
-				// The state of the input qubits will then be the satisfying solution
-				set foundInput = MultiM(inputQubits);
-
-				ResetAll(register);
-			}
-
-			return (ResultAsInt([res]), ResultAsInt(foundInput));
 		}
 	}
 
@@ -128,6 +98,7 @@
 		}
 	}
 
+	// Transforms any state to its negation, i.e. |x> ---> -|x>
 	operation Negate (q : Qubit) : ()
 	{
 		body
@@ -138,6 +109,8 @@
 			X(q);
 		}
 		adjoint auto
+		controlled auto
+		adjoint controlled auto
 	}
 
 	operation TestInversionAboutMean () : (Bool)
@@ -164,7 +137,7 @@
 			}
 
 			// TODO figure out why compilation fails, if this is called qs
-			// This should not be the same scope as the using block above
+			// This should not be the same scope as the using block above. Maybe it's fixed in the February update.
 			using (qs2 = Qubit[3])
 			{
 				// |000> ---> (-0.75 * |000>) + sum_{x=|001>}^{|111>} (0.25 * |x>)
@@ -206,7 +179,6 @@
 				ResetAll(qs2);
 
 				// |+++>
-
 				ApplyToEach(H, qs2);
 
 				InversionAboutMean(qs2);
