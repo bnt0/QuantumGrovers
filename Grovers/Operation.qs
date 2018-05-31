@@ -17,16 +17,17 @@
 	{
 		body
 		{
-			let numTotalQubits = numInputQubits + 1;
+			let numTotalQubits = numInputQubits + numIters;
 			mutable found = new Result[numInputQubits];
 
 			using (qs = Qubit[numTotalQubits])
 			{
-				let inp = qs[0..numInputQubits - 1];
+				let inp  = qs[0..numInputQubits - 1];
+				let ancs = qs[numInputQubits..numTotalQubits - 1];
 
-				for (i in 1 .. numIters)
+				for (i in 0 .. numIters - 1)
 				{		
-					let anc = qs[numTotalQubits - 1];
+					let anc = ancs[i];
 
 					ApplyToEach(H, inp);
 
