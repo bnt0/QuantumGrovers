@@ -23,11 +23,15 @@
 			using (qs = Qubit[numTotalQubits])
 			{
 				let inp = qs[0..numInputQubits - 1];
-				let anc = qs[numTotalQubits - 1];
 
-				ApplyToEach(H, inp);
+				for (i in 1 .. numIters)
+				{		
+					let anc = qs[numTotalQubits - 1];
 
-				GroverOperator(inp, anc);
+					ApplyToEach(H, inp);
+
+					GroverOperator(inp, anc);
+				}
 
 				set found = MultiM(inp);
 
