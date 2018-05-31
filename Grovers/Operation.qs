@@ -25,11 +25,11 @@
 				let inp  = qs[0..numInputQubits - 1];
 				let ancs = qs[numInputQubits..numTotalQubits - 1];
 
+				ApplyToEach(H, inp);
+
 				for (i in 0 .. numIters - 1)
 				{		
 					let anc = ancs[i];
-
-					ApplyToEach(H, inp);
 
 					GroverOperator(inp, anc);
 				}

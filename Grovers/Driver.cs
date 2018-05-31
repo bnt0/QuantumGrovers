@@ -11,8 +11,8 @@ namespace Quantum.Grovers
         {
             //RunTests();
             //RunGrovers();
-            RunThreeQubitSingleIterGrovers();
-            //RunThreeQubitMultipleIters();
+            //RunThreeQubitSingleIterGrovers();
+            RunThreeQubitMultipleIters();
             //RunWithIncreasingNumberOfQubits();
             //TimeIncreasingNumberOfQubits();
 
@@ -56,7 +56,7 @@ namespace Quantum.Grovers
             int numTotal = 1000;
             for (int i = 0; i < numTotal; i++)
             {
-                var found = RunSingleIterGrovers.Run(sim, 3).Result; // Number of total qubits is 4 because of ancilla qubit
+                var found = RunGrovers.Run(sim, 3, 0).Result; // Number of total qubits is 4 because of ancilla qubit
                 if (found.TrueForAll(r => r == Result.Zero))
                 {
                     numSuccesses++;
