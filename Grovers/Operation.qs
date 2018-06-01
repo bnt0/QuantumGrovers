@@ -27,12 +27,12 @@
 
 				ApplyToEach(H, inp);
 
-					for (i in 0 .. numIters - 1)
-					{		
-						let anc = ancs[i];
+				for (i in 0 .. numIters - 1)
+				{		
+					let anc = ancs[i];
 
-						GroverOperator(inp, anc);
-					}
+					GroverOperator(inp, anc);
+				}
 				
 				set found = MultiM(inp);
 
