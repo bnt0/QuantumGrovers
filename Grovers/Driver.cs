@@ -16,9 +16,10 @@ namespace Quantum.Grovers
                 {"--tests", RunTests},
                 {"--time-single-iter", TimeSingleIterWithIncreasingNumberOfQubits},
                 {"--results-single-iter", RunSingleIterWithIncreasingNumberOfQubits},
-                {"--results-5-qubits-many-iters", RunIncreasingIters5Qubits }
+                {"--results-5-qubits-many-iters", RunIncreasingIters5Qubits },
+                {"--results-many-qubits-optimal-iters", RunIncreasingQubitsOptimalIters },
+                {"--time-many-qubits-optimal-iters", TimeIncreasingQubitsOptimalIters }
             };
-
 
         public static void Main(string[] args)
         {
@@ -101,12 +102,35 @@ namespace Quantum.Grovers
                 "--time-single-iter    Print timing stats in the process for an increasing number of qubits (1 iter)\n" +
                 "--results-single-iter Print ratio of measurement successes for an increasing number of qubits (1 iter)\n" +
                 "--results-5-qubits-many-iters" +
-                "                      Run an increasing number of iterations with 5 input qubits. Print successes in the process."
+                "                      Run an increasing number of iterations with 5 input qubits. Print successes in the process." +
+                "--results-many-qubits-optimal-iters" +
+                "                      Run an optimal number of iterations for an increasing number of qubits. Print successes in the process." +
+                "--time-many-qubits-optimal-iters" +
+                "                      Print timing stats for an increasing number of qubits, with O(sqrt(N)) iterations."
 
                 );
         }
 
-        public static void RunTests()
+        private static void RunIncreasingQubitsOptimalIters()
+        {
+            for (int i = 2; i < 12; i++)
+            {
+                int numIters = (int) Math.Pow(2, (i-1)/2.0);
+                System.Console.Write($"{i}, {numIters}, ");
+                ExecuteGrovers(i, numIters);
+            }
+        }
+
+        private static void TimeIncreasingQubitsOptimalIters()
+        {
+            for (int i = 2; i < 12; i++)
+            {
+                int numIters = (int)Math.Pow(2, (i - 1) / 2.0);
+                TimeGrovers(i, numIters);
+            }
+        }
+
+        private static void RunTests()
         {
             var sim = new QuantumSimulator();
             var res1 = TestOracle.Run(sim).Result;
@@ -115,7 +139,7 @@ namespace Quantum.Grovers
             return;
         }
 
-        public static void RunThreeQubitSingleIterGrovers()
+        private static void RunThreeQubitSingleIterGrovers()
         {
             var sim = new QuantumSimulator();
             int numSuccesses = 0;
@@ -146,7 +170,7 @@ namespace Quantum.Grovers
         /* Runs Grover's with the specified number of input qubits and number of iterations, 1000 times each
          * Prints the numer of successes.
          */
-        public static void ExecuteGrovers(int numInputQubits, int numIters)
+        private static void ExecuteGrovers(int numInputQubits, int numIters)
         {
             var sim = new QuantumSimulator();
             int numSuccesses = 0;
@@ -162,7 +186,38 @@ namespace Quantum.Grovers
             System.Console.WriteLine($"{numSuccesses}");
         }
 
-        public static void RunSingleIterWithIncreasingNumberOfQubits()
+        /* Measures the time taken to execute Grover's with the specified number of input qubits and number of iterations, 100 times each
+         * Prints the numer of qubits, average time taken for an exeuction, and the standard deviation of execution times.
+         */
+        private static void TimeGrovers(int numInputQubits, int numIters)
+        {
+            var sim = new QuantumSimulator();
+            int numSuccesses = 0;
+            int numRuns = 100;
+            var execTimes = new List<double>(numRuns);
+
+            for (int i = 0; i < numRuns; i++)
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var found = RunGrovers.Run(sim, numInputQubits, numIters).Result; // Number of total qubits is 4 because of ancilla qubit
+                if (found.TrueForAll(r => r == Result.Zero))
+                {
+                    numSuccesses++;
+                }
+                watch.Stop();
+                double elapsedMs = watch.ElapsedMilliseconds;
+                // Discard first outlier
+                if (!(elapsedMs > 100 && i == 0))
+                {
+                    execTimes.Add(elapsedMs);
+                }
+            }
+            var avg = execTimes.Average();
+            var stdev = System.Math.Sqrt(execTimes.Average(v => System.Math.Pow(v - avg, 2)));
+            System.Console.WriteLine($"{numInputQubits}, {avg}, {stdev}");
+        }
+
+        private static void RunSingleIterWithIncreasingNumberOfQubits()
         {
             int numRuns = 1000;
             System.Console.WriteLine($"# number of input qubits, successes out of {numRuns} runs");
@@ -183,7 +238,7 @@ namespace Quantum.Grovers
             }
         }
 
-        public static void TimeSingleIterWithIncreasingNumberOfQubits()
+        private static void TimeSingleIterWithIncreasingNumberOfQubits()
         {
             var sim = new QuantumSimulator();
             int numRuns = 100;

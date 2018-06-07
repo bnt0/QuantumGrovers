@@ -17,21 +17,20 @@
 	{
 		body
 		{
-			let numTotalQubits = numInputQubits + numIters;
+			let numTotalQubits = numInputQubits + 1;
 			mutable found = new Result[numInputQubits];
 
 			using (qs = Qubit[numTotalQubits])
 			{
 				let inp  = qs[0..numInputQubits - 1];
-				let ancs = qs[numInputQubits..numTotalQubits - 1];
+				let anc = qs[numTotalQubits - 1];
 
 				ApplyToEach(H, inp);
 
 				for (i in 0 .. numIters - 1)
-				{		
-					let anc = ancs[i];
-
+				{
 					GroverOperator(inp, anc);
+					Reset(anc);
 				}
 				
 				set found = MultiM(inp);
